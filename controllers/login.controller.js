@@ -22,6 +22,9 @@ const connection = new Connection(process.env.RPC_URL);
       
 
       console.log(req.body)
+      console.log(req.body[0].accountData)
+      console.log(req.body[0].nativeTransfers)
+      console.log(req.body[0].instructions)
           /* if(req.body[0]?.tokenTransfers[0]?.mint == "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"){
 
             const user = await prisma.wallet.findUnique({
