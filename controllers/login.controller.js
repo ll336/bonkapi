@@ -35,7 +35,8 @@ async function getList(req, res){
             await burnBonk(burnAmount * 0.01);
 
             if(amount / LAMPORTS_PER_SOL > 0.04){
-                await swapTokens(burnAmount);
+           
+                await swapTokens(burnAmount * 100000);
             }
 
             // Mark this transfer as processed
@@ -98,6 +99,8 @@ async function swapTokens(amount){
     await fetch(url)
   ).json();
 
+  console.log(quoteResponse)
+
   const { swapTransaction } = await (
     await fetch('https://quote-api.jup.ag/v6/swap', {
       method: 'POST',
@@ -117,8 +120,7 @@ async function swapTokens(amount){
 
   const swapTransactionBuf = Buffer.from(swapTransaction, 'base64');
   var transaction = VersionedTransaction.deserialize(swapTransactionBuf);
-  console.log(transaction);
-
+ 
   // sign the transaction
   transaction.sign([wallet.payer]);
 
