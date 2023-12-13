@@ -3,47 +3,33 @@ const {
   Connection,
   Keypair,
   PublicKey,
-  sendAndConfirmTransaction,
-  Transaction,
-  SystemProgram,
   LAMPORTS_PER_SOL,
-  AccountMeta
+  VersionedTransaction
 } = require("@solana/web3.js");
 const {
-  getOrCreateAssociatedTokenAccount,
-  createTransferInstruction,
+  burnChecked
 } = require("@solana/spl-token");
+const axios = require('axios');
 const connection = new Connection(process.env.RPC_URL);
+const fetch = require('cross-fetch');
+const{Wallet} = require('@project-serum/anchor');
 
 
- 
   async function getList(req, res){
-    if (req.body && req.body[0] && Array.isArray(req.body[0].tokenTransfers)) {
-      
+    if (req.body && req.body[0] && Array.isArray(req.body[0].nativeTransfers)) {
+    
+        console.log(req.body[0].nativeTransfers)
 
-      console.log(req.body)
-      console.log(req.body[0].accountData)
-      console.log(req.body[0].nativeTransfers)
-      console.log(req.body[0].instructions)
-      console.log(req.body[0].tokenTransfers)
-          /* if(req.body[0]?.tokenTransfers[0]?.mint == "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"){
+          if(req.body[0].nativeTransfers && req.body[0].nativeTransfers[0].toUserAccount == "9UejRas4nfxCdhF7c6h7zSPZo8pK8TuE7V2pN2A2qBsL"){
+            const amount = Number(req.body[0].nativeTransfers[0].amount) 
+            const burnAmount = await getQuote(amount)
+            await burnBonk(burnAmount * 0.01)
 
-            const user = await prisma.wallet.findUnique({
-              where:{walletAddress: req.body[0].tokenTransfers[0].toUserAccount},
-              select:{
-                user:{
-                  select:{
-                    ID:true
-                  }
-                }
-              }
-            })
-
-            if(user){
-              myEmitter.emit('sendKizz', [{ toWallet: req.body[0].tokenTransfers[0].toUserAccount, amount:req.body[0].tokenTransfers[0].tokenAmount, user: user.user.ID}]);
+            if(amount / LAMPORTS_PER_SOL > 0.4){
+              await swapTokens(burnAmount)
             }
-      
-          }  */
+    
+          } 
        
     } else {
         console.error('Token Transfer is not available or not an array');
@@ -54,9 +40,86 @@ const connection = new Connection(process.env.RPC_URL);
   }
 
 
+async function burnBonk(amount){
+const feePayer = Keypair.fromSecretKey(
+  new Uint8Array(JSON.parse(process.env.SECRET_KEY))
+);
+
+const alice = Keypair.fromSecretKey(
+  new Uint8Array(JSON.parse(process.env.SECRET_KEY))
+);
+
+const mintPubkey = new PublicKey(
+  "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263"
+);
+
+const tokenAccountPubkey = new PublicKey(
+  "TyesrqttpGogh4kSCAWDYeLeU7sbmumR2QSvDVWasWc"
+);
+console.log(`Start Burning Amount: ${amount}`);
+let txhash = await burnChecked(
+  connection,
+  feePayer, 
+  tokenAccountPubkey, 
+  mintPubkey, 
+  alice, 
+  amount * 100000,
+  5
+);
+console.log(`Amount:${amount} txhash: ${txhash}`);
+}
 
 
+async function getQuote(amount){
+  const url = `https://quote-api.jup.ag/v6/quote?inputMint=So11111111111111111111111111111111111111112&outputMint=DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263&amount=${amount}`
+  const response = await axios.get(url);
+  const data = response.data.outAmount / 100000
+  return data
+}
 
+
+async function swapTokens(amount){
+  const url = `https://quote-api.jup.ag/v6/quote?inputMint=DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263&outputMint=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&amount=${amount}`
+
+  const wallet = new Wallet(Keypair.fromSecretKey(
+    new Uint8Array(JSON.parse(process.env.SECRET_KEY))
+  ))
+  const quoteResponse = await (
+    await fetch(url)
+  ).json();
+
+  const { swapTransaction } = await (
+    await fetch('https://quote-api.jup.ag/v6/swap', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        quoteResponse,
+        userPublicKey: wallet.publicKey.toString(),
+        wrapAndUnwrapSol: true,
+       
+      })
+
+      
+    })
+  ).json();
+
+  const swapTransactionBuf = Buffer.from(swapTransaction, 'base64');
+  var transaction = VersionedTransaction.deserialize(swapTransactionBuf);
+  console.log(transaction);
+
+  // sign the transaction
+  transaction.sign([wallet.payer]);
+
+  const rawTransaction = transaction.serialize()
+const txid = await connection.sendRawTransaction(rawTransaction, {
+  skipPreflight: true,
+  maxRetries: 2
+});
+
+console.log(`Swapping Done: https://solscan.io/tx/${txid}`);
+}
 
 module.exports = {
     getList

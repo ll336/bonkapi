@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@jup-ag/api": "^6.0.8",
     "@metaplex-foundation/js": "^0.18.1",
     "@nfteyez/sol-rayz": "^0.10.2",
     "@prisma/client": "^4.9.0",
@@ -19,8 +20,10 @@
     "@solana/web3.js": "^1.73.2",
     "apicache": "^1.6.3",
     "axios": "^1.4.0",
+    "bs58": "^5.0.0",
     "cors": "^2.8.5",
     "cron": "^2.3.0",
+    "cross-fetch": "^4.0.0",
     "csv-stringify": "^6.3.4",
     "express": "^4.18.2",
     "express-joi-validation": "^5.0.1",
