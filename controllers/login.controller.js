@@ -57,13 +57,14 @@ const tokenAccountPubkey = new PublicKey(
   "TyesrqttpGogh4kSCAWDYeLeU7sbmumR2QSvDVWasWc"
 );
 console.log(`Start Burning Amount: ${amount}`);
+const xamount = amount.tofixed(0)
 let txhash = await burnChecked(
   connection,
   feePayer, 
   tokenAccountPubkey, 
   mintPubkey, 
   alice, 
-  amount * 100000,
+  xamount * 100000,
   5
 );
 console.log(`Amount:${amount} txhash: ${txhash}`);
