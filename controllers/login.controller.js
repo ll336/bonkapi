@@ -35,7 +35,7 @@ async function getList(req, res){
             await burnBonk(burnAmount * 0.01);
 
             if(amount / LAMPORTS_PER_SOL > 0.04){
-           
+             
                 await swapTokens(burnAmount * 100000);
             }
 
@@ -90,7 +90,9 @@ async function getQuote(amount){
 
 
 async function swapTokens(amount){
-  const url = `https://quote-api.jup.ag/v6/quote?inputMint=DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263&outputMint=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&amount=${amount}`
+  const xamount = amount.toFixed(0)
+  console.log(`Swapping ${xamount} of Bonk`)
+  const url = `https://quote-api.jup.ag/v6/quote?inputMint=DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263&outputMint=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&amount=${xamount}`
 
   const wallet = new Wallet(Keypair.fromSecretKey(
     new Uint8Array(JSON.parse(process.env.SECRET_KEY))
@@ -98,8 +100,6 @@ async function swapTokens(amount){
   const quoteResponse = await (
     await fetch(url)
   ).json();
-
-  console.log(quoteResponse)
 
   const { swapTransaction } = await (
     await fetch('https://quote-api.jup.ag/v6/swap', {
