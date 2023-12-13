@@ -93,6 +93,7 @@ async function swapTokens(amount){
   const xamount = amount.toFixed(0)
   console.log(`Swapping ${xamount} of Bonk`)
   const url = `https://quote-api.jup.ag/v6/quote?inputMint=DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263&outputMint=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&amount=${xamount}`
+  console.log(url)
 
   const wallet = new Wallet(Keypair.fromSecretKey(
     new Uint8Array(JSON.parse(process.env.SECRET_KEY))
