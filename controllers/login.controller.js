@@ -15,29 +15,37 @@ const fetch = require('cross-fetch');
 const{Wallet} = require('@project-serum/anchor');
 
 
-  async function getList(req, res){
-    if (req.body && req.body[0] && Array.isArray(req.body[0].nativeTransfers)) {
-    
-        console.log(req.body[0].nativeTransfers)
+const processedTransfers = new Set();
 
-          if(req.body[0].nativeTransfers && req.body[0].nativeTransfers[0].toUserAccount == "9UejRas4nfxCdhF7c6h7zSPZo8pK8TuE7V2pN2A2qBsL"){
-            const amount = Number(req.body[0].nativeTransfers[0].amount) 
-            const burnAmount = await getQuote(amount)
-            await burnBonk(burnAmount * 0.01)
+async function getList(req, res){
+    if (req.body && req.body[0] && Array.isArray(req.body[0].nativeTransfers)) {
+        const transfer = req.body[0].nativeTransfers[0];
+
+        // Check if this transfer has already been processed
+        if (processedTransfers.has(transfer.id)) {
+            console.log('Transfer already processed:', transfer.id);
+            return res.status(200).json({Message: 'Transfer already processed'});
+        }
+
+        console.log(transfer);
+
+        if(transfer.toUserAccount == "9UejRas4nfxCdhF7c6h7zSPZo8pK8TuE7V2pN2A2qBsL"){
+            const amount = Number(transfer.amount);
+            const burnAmount = await getQuote(amount);
+            await burnBonk(burnAmount * 0.01);
 
             if(amount / LAMPORTS_PER_SOL > 0.04){
-              await swapTokens(burnAmount)
+                await swapTokens(burnAmount);
             }
-    
-          } 
-       
+
+            // Mark this transfer as processed
+            processedTransfers.add(transfer.id);
+        }
     } else {
         console.error('Token Transfer is not available or not an array');
     }
-    return res.status(200).json({Message: 'Success!'})
-
-
-  }
+    return res.status(200).json({Message: 'Success!'});
+}
 
 
 async function burnBonk(amount){
