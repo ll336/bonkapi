@@ -129,6 +129,14 @@ const txid = await connection.sendRawTransaction(rawTransaction, {
   maxRetries: 2
 });
 
+const latestBlockHash = await connection.getLatestBlockhash();
+
+await connection.confirmTransaction({
+  blockhash: latestBlockHash.blockhash,
+  lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+  signature: txid,
+});
+
 console.log(`Swapping Done: https://solscan.io/tx/${txid}`);
 }
 
