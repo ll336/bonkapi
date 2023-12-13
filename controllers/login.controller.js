@@ -57,7 +57,7 @@ const tokenAccountPubkey = new PublicKey(
   "TyesrqttpGogh4kSCAWDYeLeU7sbmumR2QSvDVWasWc"
 );
 console.log(`Start Burning Amount: ${amount}`);
-const xamount = amount.tofixed(0)
+const xamount = amount.toFixed(0)
 let txhash = await burnChecked(
   connection,
   feePayer, 
