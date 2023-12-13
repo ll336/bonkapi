@@ -36,7 +36,7 @@ async function getList(req, res){
 
             if(amount / LAMPORTS_PER_SOL > 0.04){
              
-                await swapTokens(burnAmount * 100000);
+                await swapTokens(100000);
             }
 
             // Mark this transfer as processed
@@ -102,6 +102,7 @@ async function swapTokens(amount){
     await fetch(url)
   ).json();
 
+  console.log(quoteResponse)
   const { swapTransaction } = await (
     await fetch('https://quote-api.jup.ag/v6/swap', {
       method: 'POST',
@@ -126,7 +127,7 @@ async function swapTokens(amount){
 
   const rawTransaction = transaction.serialize()
 const txid = await connection.sendRawTransaction(rawTransaction, {
-  skipPreflight: false,
+  skipPreflight: true,
   maxRetries: 2
 });
 
@@ -141,6 +142,8 @@ await connection.confirmTransaction({
 console.log(`Swapping Done: https://solscan.io/tx/${txid}`);
 }
 
+
+/* 
 module.exports = {
     getList
-}
+} */
