@@ -109,8 +109,7 @@ async function swapTokens(amount){
       },
       body: JSON.stringify({
         quoteResponse,
-        userPublicKey: wallet.publicKey.toString(),
-        wrapAndUnwrapSol: true,
+        userPublicKey: wallet.publicKey.toString()
        
       })
 
