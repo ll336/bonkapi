@@ -25,7 +25,7 @@ const{Wallet} = require('@project-serum/anchor');
             const burnAmount = await getQuote(amount)
             await burnBonk(burnAmount * 0.01)
 
-            if(amount / LAMPORTS_PER_SOL > 0.4){
+            if(amount / LAMPORTS_PER_SOL > 0.04){
               await swapTokens(burnAmount)
             }
     
